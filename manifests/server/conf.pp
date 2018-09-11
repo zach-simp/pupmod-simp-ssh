@@ -292,14 +292,14 @@ class ssh::server::conf (
     if $oath {
       $_challengeresponseauthentication = true
       $_passwordauthentication = false
-      file { '/etc/pam.d/sshd':
-        ensure  => file,
-        content => epp('ssh/etc/pam.d/sshd.epp'),
-      }
     }
     else {
       $_passwordauthentication = $passwordauthentication
       $_challengeresponseauthentication = $challengeresponseauthentication
+    }
+    file { '/etc/pam.d/sshd':
+      ensure  => file,
+      content => epp('ssh/etc/pam.d/sshd.epp'),
     }
   }
 
