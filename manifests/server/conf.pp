@@ -75,6 +75,15 @@
 #
 # @param pam Enables the Pluggable Authentication Module interface.
 #
+# @param oath  Configures ssh to use pam_oath TOTP in the sshd pam stack.
+#   Also configures sshd_config to use required settings. Inherits from
+#   simp_options::oath, defaults to false if not found. 
+#   WARNING: If this setting is enabled then disabled and 
+#   passwordauthentication is unmanaged (its default) will be set to no
+#   in sshd_config! 
+#
+# @param oath_window  Sets the TOTP window (Defined in RFC 6238 section 5.2)
+#
 # @param useprivilegeseparation  Specifies whether sshd separates
 #   privileges by creating an unprivileged child process to deal with incoming
 #   network traffic.
