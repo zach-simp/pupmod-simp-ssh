@@ -182,7 +182,7 @@ class ssh::server::conf (
   Boolean                          $strictmodes                     = true,
   String                           $subsystem                       = 'sftp /usr/libexec/openssh/sftp-server',
   Boolean                          $pam                             = simplib::lookup('simp_options::pam', { 'default_value' => true }),
-  Boolean                          $totp                            = simplib::lookup('simp_options::totp', { 'default_value' => false }),
+  Boolean                          $oath                            = simplib::lookup('simp_options::oath', { 'default_value' => false }),
   Variant[Boolean,Enum['sandbox']] $useprivilegeseparation          = $::ssh::server::params::useprivilegeseparation,
   Boolean                          $x11forwarding                   = false,
   Simplib::Netlist                 $trusted_nets                    = ['ALL'],
@@ -282,8 +282,8 @@ class ssh::server::conf (
       $_kex_algorithms = $::ssh::server::params::kex_algorithms
     }
   }
-  #//FIXME
-  if $totp {
+  
+  if $oath {
     if $pam {
       $challengeresponseauthentication = true
       file { '/etc/pam.d/sshd':
@@ -292,7 +292,7 @@ class ssh::server::conf (
       }
     }
     else {
-      fail('$pam must be set if $totp is set')
+      fail('$pam must be set if $oath is set')
     }
   }
 

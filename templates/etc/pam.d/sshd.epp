@@ -1,7 +1,7 @@
 #%PAM-1.0
 auth	   required	    pam_sepermit.so
 auth required pam_faillock.so preauth <% if $pam::auth::display_account_lock == false { %> silent <% } %> deny=<%= $pam::auth::deny %> audit unlock_time=<%= $pam::auth::unlock_time %> fail_interval=<%= $pam::auth::fail_interval %> <%- if $pam::auth::even_deny_root == true { %> even_deny_root root_unlock_time=<%= ${pam::auth::root_unlock_time} %> <% } -%>
-<% if $ssh::server::conf::totp == true { %>
+<% if $ssh::server::conf::oath == true { %>
 auth    [success=3 default=ignore] pam_listfile.so item=group sense=allow file=/etc/liboath/exclude_groups.oath
 auth    [success=2 default=ignore] pam_listfile.so item=user sense=allow file=/etc/liboath/exclude_users.oath
 auth    [success=1 default=bad]    pam_oath.so usersfile=/etc/liboath/users.oath window=1
