@@ -183,6 +183,7 @@ class ssh::server::conf (
   String                           $subsystem                       = 'sftp /usr/libexec/openssh/sftp-server',
   Boolean                          $pam                             = simplib::lookup('simp_options::pam', { 'default_value' => true }),
   Boolean                          $oath                            = simplib::lookup('simp_options::oath', { 'default_value' => false }),
+  Integer[0]                       $oath_window                     = 1,
   Variant[Boolean,Enum['sandbox']] $useprivilegeseparation          = $::ssh::server::params::useprivilegeseparation,
   Boolean                          $x11forwarding                   = false,
   Simplib::Netlist                 $trusted_nets                    = ['ALL'],
@@ -282,17 +283,21 @@ class ssh::server::conf (
       $_kex_algorithms = $::ssh::server::params::kex_algorithms
     }
   }
-  
-  if $oath {
-    if $pam {
-      $challengeresponseauthentication = true
+
+  if $oath and !$pam {
+    fail('$pam must be set if $oath is set')
+  }
+
+  if $pam {
+    if $oath {
+      $_challengeresponseauthentication = true
       file { '/etc/pam.d/sshd':
         ensure  => file,
-        content => epp('etc/pam.d/sshd.epp'),
+        content => epp('ssh/etc/pam.d/sshd.epp'),
       }
     }
     else {
-      fail('$pam must be set if $oath is set')
+      $_challengeresponseauthentication = $challengeresponseauthentication
     }
   }
 
@@ -306,7 +311,7 @@ class ssh::server::conf (
   sshd_config { 'AcceptEnv'                       : value => $acceptenv }
   sshd_config { 'AuthorizedKeysFile'              : value => $authorizedkeysfile }
   sshd_config { 'Banner'                          : value => $banner }
-  sshd_config { 'ChallengeResponseAuthentication' : value => ssh::config_bool_translate($challengeresponseauthentication) }
+  sshd_config { 'ChallengeResponseAuthentication' : value => ssh::config_bool_translate($_challengeresponseauthentication) }
   sshd_config { 'Ciphers'                         : value => $_ciphers }
   sshd_config { 'ClientAliveInterval'             : value => to_string($clientaliveinterval) }
   sshd_config { 'ClientAliveCountMax'             : value => to_string($clientalivecountmax) }
