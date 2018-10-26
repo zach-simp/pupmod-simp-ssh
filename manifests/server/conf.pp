@@ -291,12 +291,14 @@ class ssh::server::conf (
   if $pam {
     if $oath {
       $_challengeresponseauthentication = true
+      $_passwordauthentication = false
       file { '/etc/pam.d/sshd':
         ensure  => file,
         content => epp('ssh/etc/pam.d/sshd.epp'),
       }
     }
     else {
+      $_passwordauthentication = $passwordauthentication
       $_challengeresponseauthentication = $challengeresponseauthentication
     }
   }
@@ -340,8 +342,8 @@ class ssh::server::conf (
     sshd_config { 'RhostsRSAAuthentication' : value => ssh::config_bool_translate($rhostsrsaauthentication) }
   }
 
-  if $passwordauthentication != undef {
-    sshd_config { 'PasswordAuthentication' : value => ssh::config_bool_translate($passwordauthentication) }
+  if $_passwordauthentication != undef {
+    sshd_config { 'PasswordAuthentication' : value => ssh::config_bool_translate($_passwordauthentication) }
   }
 
   # Kex should be empty openssl < 5.7, they are not supported.

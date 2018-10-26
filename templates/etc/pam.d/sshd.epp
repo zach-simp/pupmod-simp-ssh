@@ -4,7 +4,7 @@ auth       required pam_faillock.so preauth <% if $pam::display_account_lock == 
 <% if $ssh::server::conf::oath == true { %>
 auth       [success=3 default=ignore] pam_listfile.so item=group sense=allow file=/etc/liboath/exclude_groups.oath
 auth       [success=2 default=ignore] pam_listfile.so item=user sense=allow file=/etc/liboath/exclude_users.oath
-auth       [success=1 default=bad]    pam_oath.so usersfile=/etc/liboath/users.oath window=<%= $ssh::server::conf::oath_window %>
+auth       [success=1 default=bad]    pam_oath.so debug usersfile=/etc/liboath/users.oath window=<%= $ssh::server::conf::oath_window %>
 auth       requisite    pam_deny.so
 <% } %>
 auth       substack     password-auth
