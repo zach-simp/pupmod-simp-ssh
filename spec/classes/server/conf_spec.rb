@@ -1,5 +1,10 @@
 require 'spec_helper'
 
+def get_expected(filename)                                                                                                                                                                                        
+  path = File.join(File.dirname(__FILE__), '../..', 'expected', File.basename(__FILE__, '.rb'), filename)                                                                                                                                                                                                     
+  IO.read(path)                                                                                                                                                                                                   
+end 
+
 describe 'ssh::server::conf' do
 
   context 'supported operating systems' do
@@ -52,6 +57,7 @@ describe 'ssh::server::conf' do
           it { is_expected.to contain_sshd_config('IgnoreRhosts').with_value('yes') }
           it { is_expected.to contain_sshd_config('IgnoreUserKnownHosts').with_value('yes') }
           it { is_expected.to contain_sshd_config('KerberosAuthentication').with_value('no') }
+          it { is_expected.to contain_sshd_config('PasswordAuthentication').with_value('yes') }
           it { is_expected.to_not contain_sshd_config('KexAlgorithms') }
           it { is_expected.to contain_sshd_config('ListenAddress').with_value('0.0.0.0') }
           it { is_expected.to contain_sshd_config('Port').with_value('22') }
@@ -289,12 +295,49 @@ describe 'ssh::server::conf' do
           let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
           let(:hieradata) { 'some_global_catalysts_enabled' }
           let(:pre_condition){ 'include "::ssh"' }
+          let(:file_content) { get_expected('sshd_default') }
 
           it { is_expected.to compile.with_all_deps }
           it { is_expected.to contain_sshd_config('UsePAM').with_value('yes') }
           it { is_expected.to contain_class('iptables') }
           it { is_expected.to contain_class('tcpwrappers') }
           it { is_expected.to contain_class('haveged') }
+          it { is_expected.to contain_file('/etc/pam.d/sshd').with_content(file_content) }
+        end
+
+        context 'pam stack non defaults' do
+          let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
+          let(:hieradata) { 'non_default_faillock_pam_stack' }
+          let(:pre_condition) { 'include "::ssh"' }
+          let(:file_content) { get_expected("sshd_non_default") }
+          
+          it { is_expected.to compile.with_all_deps }
+          it { is_expected.to contain_sshd_config('UsePAM').with_value('yes') }
+          it { is_expected.to contain_file('/etc/pam.d/sshd').with_content(file_content) }
+        end
+
+        context 'pam dont deny root' do
+          let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
+          let(:hieradata) { 'dont_deny_root_pam_stack' }
+          let(:pre_condition) { 'include "::ssh"' }
+          let(:file_content) { get_expected("sshd_dont_deny_root") }
+          
+          it { is_expected.to compile.with_all_deps }
+          it { is_expected.to contain_sshd_config('UsePAM').with_value('yes') }
+          it { is_expected.to contain_file('/etc/pam.d/sshd').with_content(file_content) }
+        end
+
+        context 'pam defaults with oath enabled' do
+          let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
+          let(:hieradata) { 'oath_enabled_pam_stack' }
+          let(:pre_condition) { 'include "::ssh"' }
+          let(:file_content) { get_expected("sshd_oath_enabled") }
+          
+          it { is_expected.to compile.with_all_deps }
+          it { is_expected.to contain_sshd_config('UsePAM').with_value('yes') }
+          it { is_expected.to contain_sshd_config('PasswordAuthentication').with_value('no') }
+          it { is_expected.to contain_sshd_config('ChallengeResponseAuthentication').with_value('yes') }
+          it { is_expected.to contain_file('/etc/pam.d/sshd').with_content(file_content) }
         end
 
         context 'when connected to an IPA domain' do
