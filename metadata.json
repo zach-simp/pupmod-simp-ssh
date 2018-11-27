@@ -1,6 +1,6 @@
 {
   "name": "simp-ssh",
-  "version": "6.5.0",
+  "version": "6.6.0",
   "author": "SIMP Team",
   "summary": "Manage ssh",
   "license": "Apache-2.0",
@@ -9,7 +9,9 @@
   "issues_url": "https://simp-project.atlassian.net",
   "tags": [
     "simp",
-    "ssh"
+    "ssh",
+    "ssh_authorized_key",
+    "cipher"
   ],
   "dependencies": [
     {
@@ -83,7 +85,7 @@
   "requirements": [
     {
       "name": "puppet",
-      "version_requirement": ">= 4.7.0 < 6.0.0"
+      "version_requirement": ">= 4.10.4 < 6.0.0"
     }
   ]
 }
