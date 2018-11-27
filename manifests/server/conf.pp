@@ -59,7 +59,7 @@
 #  account whether the server is in FIPS mode.
 #
 # @param passwordauthentication Enable password authentication on the sshd
-#  server. If left as undef (default), this setting will not be managed.
+#  server. If left as undef, this setting will not be managed.
 #
 # @param permitemptypasswords  When password authentication is allowed,
 #   it specifies whether the server allows login to accounts with empty password
@@ -79,7 +79,7 @@
 #   Also configures sshd_config to use required settings. Inherits from
 #   simp_options::oath, defaults to false if not found. 
 #   WARNING: If this setting is enabled then disabled and 
-#   passwordauthentication is unmanaged (its default) will be set to no
+#   passwordauthentication is unmanaged, this will be set to no
 #   in sshd_config! 
 #
 # @param oath_window  Sets the TOTP window (Defined in RFC 6238 section 5.2)
@@ -181,7 +181,7 @@ class ssh::server::conf (
   Simplib::Host                    $listenaddress                   = '0.0.0.0',
   Simplib::Port                    $port                            = 22,
   Optional[Array[String]]          $macs                            = undef,
-  Optional[Boolean]                $passwordauthentication          = undef,
+  Optional[Boolean]                $passwordauthentication          = true,
   Boolean                          $permitemptypasswords            = false,
   Ssh::PermitRootLogin             $permitrootlogin                 = false,
   Boolean                          $permituserenvironment           = false,
