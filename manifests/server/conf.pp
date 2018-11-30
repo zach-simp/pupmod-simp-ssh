@@ -192,12 +192,13 @@ class ssh::server::conf (
   String                           $subsystem                       = 'sftp /usr/libexec/openssh/sftp-server',
   Boolean                          $pam                             = simplib::lookup('simp_options::pam', { 'default_value'         => true }),
   Boolean                          $display_account_lock            = simplib::lookup('pam::display_account_lock', { 'default_value' => false }),
-  Integer[0]                       $deny                            = simplib::lookup('pam::deny', { 'default_value' => 5 }),
-  Integer[0]                       $unlock_time                     = simplib::lookup('pam::unlock_time', { 'default_value' => 900 }),
-  Integer[0]                       $fail_interval                   = simplib::lookup('pam::fail_interval', { 'default_value' => 900 }),
-  Boolean                          $even_deny_root                  = simplib::lookup('pam::even_deny_root', { 'default_value' => true }),
-  Integer[0]                       $root_unlock_time                = simplib::lookup('pam::root_unlock_time', { 'default_value' => 60 }),
-  Boolean                          $oath                            = simplib::lookup('simp_options::oath', { 'default_value' => false }),
+  Integer[0]                       $deny                            = simplib::lookup('pam::deny', { 'default_value'                 => 5 }),
+  Integer[0]                       $unlock_time                     = simplib::lookup('pam::unlock_time', { 'default_value'          => 900 }),
+  Integer[0]                       $fail_interval                   = simplib::lookup('pam::fail_interval', { 'default_value'        => 900 }),
+  Boolean                          $even_deny_root                  = simplib::lookup('pam::even_deny_root', { 'default_value'       => true }),
+  Integer[0]                       $root_unlock_time                = simplib::lookup('pam::root_unlock_time', { 'default_value'     => 60 }),
+  Boolean                          $manage_pam_sshd                 = simplib::lookup('simp_options::oath', { 'default_value'        => false }),
+  Boolean                          $oath                            = simplib::lookup('simp_options::oath', { 'default_value'        => false }),
   Integer[0]                       $oath_window                     = 1,
   Variant[Boolean,Enum['sandbox']] $useprivilegeseparation          = $::ssh::server::params::useprivilegeseparation,
   Boolean                          $x11forwarding                   = false,
@@ -237,7 +238,7 @@ class ssh::server::conf (
   if $pki {
     pki::copy { 'sshd':
       source => $app_pki_external_source,
-      pki    => $pki
+      pki    => $pki,
     }
   }
 
@@ -305,16 +306,38 @@ class ssh::server::conf (
 
   if $pam {
     if $oath {
-      $_challengeresponseauthentication = true
-      $_passwordauthentication = false
+      if $manage_pam_sshd {
+        $_challengeresponseauthentication = true
+        $_passwordauthentication = false
+
+        if $facts['os']['family'] == 'RedHat' {
+          if $facts['os']['release']['major'] == '6'{
+            file { '/etc/pam.d/sshd':
+              ensure  => file,
+              content => epp('ssh/etc/pam.d/sshd_el6.epp'),
+            }
+          }
+          elsif $facts['os']['release']['major'] == '7'{
+            file { '/etc/pam.d/sshd':
+              ensure  => file,
+              content => epp('ssh/etc/pam.d/sshd_el7.epp'),
+            }
+          }
+          else {
+            fail('Unsupported RedHat major release version!')
+          }
+        }
+        else {
+          fail('Unsupported OS family!')
+        }
+      }
+      else {
+        fail('manage_pam_sshd must be true for oath to work')
+      }
     }
     else {
       $_passwordauthentication = $passwordauthentication
       $_challengeresponseauthentication = $challengeresponseauthentication
-    }
-    file { '/etc/pam.d/sshd':
-      ensure  => file,
-      content => epp('ssh/etc/pam.d/sshd.epp'),
     }
   }
 
@@ -393,7 +416,7 @@ class ssh::server::conf (
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    recurse => true
+    recurse => true,
   }
 
   if $firewall {
@@ -402,7 +425,7 @@ class ssh::server::conf (
     iptables::listen::tcp_stateful { 'allow_sshd':
       order        => 8,
       trusted_nets => $trusted_nets,
-      dports       => $port
+      dports       => $port,
     }
   }
 
@@ -410,7 +433,7 @@ class ssh::server::conf (
     include '::tcpwrappers'
     tcpwrappers::allow { 'sshd':
       pattern => nets2ddq($trusted_nets),
-      order   => 1
+      order   => 1,
     }
   }
 }

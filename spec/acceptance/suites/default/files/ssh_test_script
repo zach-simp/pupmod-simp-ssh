@@ -7,7 +7,8 @@ set timeout 5
 
 spawn ssh -o StrictHostKeyChecking=no -o NumberOfPasswordPrompts=1 $host -l $user ssh -V
 expect "*password:" {
-  send "$pass\r"
+    send "$pass\r"
+    exp_continue
 }
 catch wait result
 exit [lindex $result 3]

@@ -67,7 +67,6 @@ describe 'ssh class' do
             scp_to(host, File.join(files_dir, 'ssh_test_script'), '/usr/local/bin/ssh_test_script')
             on(host, "chmod +x /usr/local/bin/ssh_test_script")
           end
-
           on(server, "/usr/local/bin/ssh_test_script root localhost password")
 
           dump_sshd_ciphers(server)
