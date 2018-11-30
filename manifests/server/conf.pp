@@ -310,7 +310,7 @@ class ssh::server::conf (
         $_challengeresponseauthentication = true
         $_passwordauthentication = false
 
-        if $facts['os']['family'] == 'RedHat' {
+        if $facts['os']['family'] in ['RedHat','CentOS'] {
           if $facts['os']['release']['major'] == '6'{
             file { '/etc/pam.d/sshd':
               ensure  => file,

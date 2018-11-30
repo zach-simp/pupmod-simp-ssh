@@ -3,19 +3,26 @@ require 'spec_helper_acceptance'
 test_name 'ssh check oath'
 
 describe 'ssh check oath' do
+  let(:client_hieradata) { 'simp_options::oath => false' }
+
   let(:server_hieradata) do
     {
       'simp_options::trusted_nets'            => ['ALL'],
+      'simp_options::oath'                    => true,
       'ssh::server::conf::banner'             => '/dev/null',
       'ssh::server::conf::permitrootlogin'    => true,
       'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
-      'ssh::oath'                             => true
     }
   end
 
   #
   # NOTE: by default, include 'ssh' will automatically include the ssh_server
-  let(:client_manifest) { "include 'ssh::client'" }
+  let(:client_manifest) do
+    <<-CLIENT_CONFIG
+         include 'ssh::client'
+         include 'oath'
+    CLIENT_CONFIG
+  end
 
   let(:server_manifest) do
     <<-SERVER_CONFIG
@@ -41,8 +48,8 @@ describe 'ssh check oath' do
       context 'with default parameters' do
         it 'configures server with no errors' do
           install_package(client, 'epel-release')
-          install_package(client, 'oathtool')
           install_package(client, 'expect')
+          set_hieradata_on(client, client_hieradata)
           apply_manifest_on(client, client_manifest, expect_changes: true)
           set_hieradata_on(server, server_hieradata)
           apply_manifest_on(server, server_manifest, expect_changes: true)
