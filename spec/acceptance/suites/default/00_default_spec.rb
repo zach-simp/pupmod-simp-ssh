@@ -287,7 +287,7 @@ describe 'ssh class' do
           # It appears as though RequestTTY is not a valid ssh_config option
           # on CentOS 6.9 with openssh 5.3
           os_major_release = os
-          os_major_release.delete!("^0-9", '')
+          os_major_release.delete!("^0-9")
           if os_major_release != nil then
             if os_major_release.to_i >= 7 then
               on(client, 'echo > /etc/ssh/ssh_config')
