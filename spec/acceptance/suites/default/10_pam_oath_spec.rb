@@ -13,7 +13,8 @@ describe 'ssh check oath' do
       'ssh::server::conf::banner'             => '/dev/null',
       'ssh::server::conf::permitrootlogin'    => true,
       'ssh::server::conf::authorizedkeysfile' => '.ssh/authorized_keys',
-      'pam::access::users'                    => JSON.parse(%Q({ "defaults": { "origins": [ "ALL" ], "permission": "+" }, "vagrant": null, "root": null, "testuser": null, "tst0_usr": null }))
+      'pam::access::users'                    => JSON.parse(%Q({ "defaults": { "origins": [ "ALL" ], "permission": "+" }, "vagrant": null, "root": null, "testuser": null, "tst0_usr": null })),
+      'oath::oath_users'                      => JSON.parse(%Q({ "tst0_usr": {"token_type": "HOTP/T30/6", "pin": "-", "secret_key": "000001"}})),
     }
   end
 
