@@ -19,11 +19,6 @@ fixtures:
     sssd: https://github.com/simp/pupmod-simp-sssd
     stdlib: https://github.com/simp/puppetlabs-stdlib
     tcpwrappers: https://github.com/simp/pupmod-simp-tcpwrappers
-    oddjob: https://github.com/simp/pupmod-simp-oddjob
-    pam: https://github.com/simp/pupmod-simp-pam
-    oath:
-      repo: https://github.com/zach-simp/pupmod-simp-oath
-      branch: SIMP-5324
     disa_stig-el7-baseline:
       repo: https://github.com/simp/inspec-profile-disa_stig-el7
       branch:  master

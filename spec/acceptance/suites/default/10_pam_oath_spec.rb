@@ -1,5 +1,4 @@
 require 'spec_helper_acceptance'
-require 'json'
 
 test_name 'ssh check oath'
 
@@ -96,7 +95,7 @@ describe 'ssh check oath' do
         end
 
         it 'fail auth with bad TOTP' do
-          on(client, "/usr/local/bin/oath_ssh_test_script #{test_user} #{bad_oath_key} #{password} #{os}-server", :acceptable_exit_codes => [1])
+          on(client, "/usr/local/bin/oath_ssh_test_script #{test_user} #{bad_key} #{password} #{os}-server", :acceptable_exit_codes => [1])
         end
 
         it 'fail auth with good TOTP and bad pass' do
@@ -104,7 +103,7 @@ describe 'ssh check oath' do
         end
 
         it 'test user exclusion' do
-          on(server, "echo '#{test_user}' >> /etc/liboath/exclude_users.oath")
+          on(server, "echo 'test_user' >> /etc/liboath/exclude_users.oath")
           on(client, "/usr/local/bin/ssh_test_script #{test_user} #{os}-server #{password}")
           # Clean up test_user out of exclude_users file
           on(server, "echo 'vagrant' > /etc/liboath/exclude_users.oath")
@@ -113,8 +112,8 @@ describe 'ssh check oath' do
 
         it 'test group exclusion' do
           on(server, 'groupadd test_group')
-          on(server, "echo 'test_group' >> /etc/liboath/exclude_groups.oath")
-          on(server, "usermod -aG test_group #{test_user}")
+          on(server, "echo 'test_group' >> /etc/liboath/exclude_groups.oath'")
+          on(server, "usermod -G test_group #{test_user}")
           on(client, "/usr/local/bin/ssh_test_script #{test_user} #{os}-server #{password}")
           # Clean up test_user out of exclude_groups file
           on(server, "echo '' > /etc/liboath/exclude_groups.oath")
