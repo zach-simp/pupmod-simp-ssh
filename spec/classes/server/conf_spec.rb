@@ -290,20 +290,12 @@ describe 'ssh::server::conf' do
             end
           }
         end
-        
-        # Only el versions 6 and 7 are supported, otherwise there _will_ be sshd
-        # pam stack errors 
-
-        if facts[:os][:release][:major].to_s == '6' or  facts[:os][:release][:major].to_s == '7' then
-          let(:el_version) { facts[:os][:release][:major].to_s }
-        else
-          fail "Unsupported OS"
-        end
 
         context 'with firewall, haveged, pam, and tcpwrappers global catalysts enabled' do
           let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
           let(:hieradata) { 'some_global_catalysts_enabled' }
           let(:pre_condition){ 'include "::ssh"' }
+          let(:el_version) { facts[:os][:release][:major].to_s }
           let(:file_content) { get_expected("el#{el_version}_sshd_default") }
 
           it { is_expected.to compile.with_all_deps }
@@ -318,6 +310,7 @@ describe 'ssh::server::conf' do
           let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
           let(:hieradata) { 'non_default_faillock_pam_stack' }
           let(:pre_condition) { 'include "::ssh"' }
+          let(:el_version) { facts[:os][:release][:major].to_s }
           let(:file_content) { get_expected("el#{el_version}_sshd_non_default") }
           
           it { is_expected.to compile.with_all_deps }
@@ -329,6 +322,7 @@ describe 'ssh::server::conf' do
           let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
           let(:hieradata) { 'dont_deny_root_pam_stack' }
           let(:pre_condition) { 'include "::ssh"' }
+          let(:el_version) { facts[:os][:release][:major].to_s }
           let(:file_content) { get_expected("el#{el_version}_sshd_dont_deny_root") }
           
           it { is_expected.to compile.with_all_deps }
@@ -340,6 +334,7 @@ describe 'ssh::server::conf' do
           let(:facts) { os_facts.merge( { :openssh_version => '6.6', :fips_enabled => true } ) }
           let(:hieradata) { 'oath_enabled_pam_stack' }
           let(:pre_condition) { 'include "::ssh"' }
+          let(:el_version) { facts[:os][:release][:major].to_s }
           let(:file_content) { get_expected("el#{el_version}_sshd_oath_enabled") }
           
           it { is_expected.to compile.with_all_deps }

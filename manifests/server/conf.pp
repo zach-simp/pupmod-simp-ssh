@@ -75,12 +75,19 @@
 #
 # @param pam Enables the Pluggable Authentication Module interface.
 #
+# @param manage_pam_sshd Flag indicating whether or not to mangae the 
+#   pam stack for sshd. This is required for the oath option to work 
+#   properly.
+#
 # @param oath  Configures ssh to use pam_oath TOTP in the sshd pam stack.
 #   Also configures sshd_config to use required settings. Inherits from
 #   simp_options::oath, defaults to false if not found. 
 #   WARNING: If this setting is enabled then disabled and 
-#   passwordauthentication is unmanaged, this will be set to no
-#   in sshd_config! 
+#            passwordauthentication is unmanaged, this will be set to no
+#            in sshd_config! 
+#   WARNING: pupmod-simp-oath is a dependency of this option. If this is                                                                                                                                          
+#            set to true without the oath module, you will be unable to                                                                                                                                           
+#            log in locally!  
 #
 # @param oath_window  Sets the TOTP window (Defined in RFC 6238 section 5.2)
 #
@@ -197,7 +204,7 @@ class ssh::server::conf (
   Integer[0]                       $fail_interval                   = simplib::lookup('pam::fail_interval', { 'default_value'        => 900 }),
   Boolean                          $even_deny_root                  = simplib::lookup('pam::even_deny_root', { 'default_value'       => true }),
   Integer[0]                       $root_unlock_time                = simplib::lookup('pam::root_unlock_time', { 'default_value'     => 60 }),
-  Boolean                          $manage_pam_sshd                 = simplib::lookup('simp_options::oath', { 'default_value'        => false }),
+  Boolean                          $manage_pam_sshd                 = true,
   Boolean                          $oath                            = simplib::lookup('simp_options::oath', { 'default_value'        => false }),
   Integer[0]                       $oath_window                     = 1,
   Variant[Boolean,Enum['sandbox']] $useprivilegeseparation          = $::ssh::server::params::useprivilegeseparation,
@@ -309,27 +316,6 @@ class ssh::server::conf (
       if $manage_pam_sshd {
         $_challengeresponseauthentication = true
         $_passwordauthentication = false
-
-        if $facts['os']['family'] in ['RedHat','CentOS'] {
-          if $facts['os']['release']['major'] == '6'{
-            file { '/etc/pam.d/sshd':
-              ensure  => file,
-              content => epp('ssh/etc/pam.d/sshd_el6.epp'),
-            }
-          }
-          elsif $facts['os']['release']['major'] == '7'{
-            file { '/etc/pam.d/sshd':
-              ensure  => file,
-              content => epp('ssh/etc/pam.d/sshd_el7.epp'),
-            }
-          }
-          else {
-            fail('Unsupported RedHat major release version!')
-          }
-        }
-        else {
-          fail('Unsupported OS family!')
-        }
       }
       else {
         fail('manage_pam_sshd must be true for oath to work')
@@ -338,6 +324,23 @@ class ssh::server::conf (
     else {
       $_passwordauthentication = $passwordauthentication
       $_challengeresponseauthentication = $challengeresponseauthentication
+    }
+  }
+  if $manage_pam_sshd {
+    if $facts['os']['release']['major'] == '6'{
+      file { '/etc/pam.d/sshd':
+        ensure  => file,
+        content => epp('ssh/etc/pam.d/sshd_el6.epp'),
+      }
+    }
+    elsif $facts['os']['release']['major'] == '7'{
+      file { '/etc/pam.d/sshd':
+        ensure  => file,
+        content => epp('ssh/etc/pam.d/sshd_el7.epp'),
+      }
+    }
+    else {
+      fail('Unsupported RedHat major release version!')
     }
   }
 
